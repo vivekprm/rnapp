@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import { StyleSheet, Text, View, TextInput, Button } from "react-native";
 
+import ListItem from './src/components/ListItem/ListItem';
+
 export default class App extends Component {
   state = {
     placeName: "",
@@ -27,7 +29,7 @@ export default class App extends Component {
 
   render() {
     const placesOutput = this.state.places.map((place, i) => (
-      <Text key={i} placeName={place}></Text>
+      <ListItem key={i} placeName={place}></ListItem>
     ));
     return (
       <View style={styles.container}>

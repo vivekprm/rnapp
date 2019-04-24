@@ -1,11 +1,17 @@
 import React, { Component } from 'react';
-import { View, Text, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, Dimensions, StyleSheet, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/Octicons';
 
 class SideDrawer extends Component {
     render () {
         return (
             <View style={[styles.container, { width: Dimensions.get("window").width * 0.8 }]}>
-                <Text>Side drawer</Text>
+                <TouchableOpacity>
+                    <View style={styles.drawerItem}>
+                        <Icon name="sign-out" size={30} color="#aaa" style={styles.drawerItemIcon} />
+                        <Text>Signout</Text>
+                    </View>
+                </TouchableOpacity>
             </View>
         );
     }
@@ -13,9 +19,18 @@ class SideDrawer extends Component {
 
 const styles = StyleSheet.create({
     container: {
-        paddingTop: 22,
+        paddingTop: 50,
         backgroundColor: "white",
         flex: 1
+    },
+    drawerItem: {
+        flexDirection: "row",
+        alignItems: "center",
+        padding: 10,
+        backgroundColor: "#eee"
+    },
+    drawerItemIcon: {
+        marginRight: 10
     }
 });
 

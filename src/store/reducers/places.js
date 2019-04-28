@@ -13,8 +13,9 @@ const reducer = (state = initialState, action) => {
                     key: Math.random(),
                     name: action.placeName,
                     image: {
-                       uri: 'https://res-4.cloudinary.com/enchanting/images/w_1600,h_700,c_fill/et-web/2015/05/Enchanting-Travels-Seychelles-Tours-Denis-Island-Resort-Aerial-view/seychelles-tours-trips-1.jpg'
-                    }
+                        uri: action.image.uri
+                    },
+                    location: action.location
                 })
             };
         case DELETE_PLACE:

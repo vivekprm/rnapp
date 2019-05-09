@@ -1,14 +1,25 @@
 import { SELECT_PLACE, DESELECT_PLACE, SET_PLACES, REMOVE_PLACE } from './actionTypes';
-import { uiStartLoading, uiStopLoading } from './index';
+import { uiStartLoading, uiStopLoading, authGetToken } from './index';
 
 export const addPlace = (placeName, location, image) => {
     return dispatch => {
+        let authToken;
         dispatch(uiStartLoading());
-        fetch("https://us-central1-rnapp-maps-1556299000508.cloudfunctions.net/storeImage", {
-            method: "POST",
-            body: JSON.stringify({
-                image: image.base64
-            })
+        dispatch(authGetToken())
+        .catch(() => {
+            alert("No valid token found.");
+        })
+        .then(token => {
+            authToken = token;
+            return fetch("https://us-central1-rnapp-maps-1556299000508.cloudfunctions.net/storeImage", {
+                method: "POST",
+                body: JSON.stringify({
+                    image: image.base64
+                }),
+                headers: {
+                    "Authorization": "Bearer " + authToken
+                }
+            });
         })
         .catch(err => {
             console.log(err);
@@ -21,19 +32,19 @@ export const addPlace = (placeName, location, image) => {
                 location: location,
                 image: parsedRes.imageUrl
             };
-            return fetch("https://rnapp-maps-1556299000508.firebaseio.com/places.json", {
+            return fetch("https://rnapp-maps-1556299000508.firebaseio.com/places.json?auth=" + authToken, {
                 method: "POST",
                 body: JSON.stringify(placeData)
             });
         })
-        .catch(err => {
-            console.log(err);
-            alert("Something went wrong, please try again!");
-            dispatch(uiStopLoading());
-        })
         .then(res => res.json())
         .then(parsedRes => {
             console.log(parsedRes);
+            dispatch(uiStopLoading());
+        })
+        .catch(err => {
+            console.log(err);
+            alert("Something went wrong, please try again!");
             dispatch(uiStopLoading());
         });
     }
@@ -41,26 +52,35 @@ export const addPlace = (placeName, location, image) => {
 
 export const getPlaces = () => {
     return dispatch => {
-        fetch("https://rnapp-maps-1556299000508.firebaseio.com/places.json")
-        .catch(err => {
-            alert("Something went wrong, sorry :/");
-            console.log(err);
-        })
-        .then(res => res.json())
-        .then(parsedRes => {
+        dispatch(authGetToken())
+          .then(token => {
+            return fetch(
+              "https://rnapp-maps-1556299000508.firebaseio.com/places.json?auth=" +
+                token
+            );
+          })
+          .catch(() => {
+            alert("No valid token found!");
+          })
+          .then(res => res.json())
+          .then(parsedRes => {
             const places = [];
-            for(let key in parsedRes) {
-                places.push({
-                    ...parsedRes[key],
-                    image: {
-                        uri: parsedRes[key].image
-                    },
-                    key: key
-                })
+            for (let key in parsedRes) {
+              places.push({
+                ...parsedRes[key],
+                image: {
+                  uri: parsedRes[key].image
+                },
+                key: key
+              });
             }
             dispatch(setPlaces(places));
-        });
-    }
+          })
+          .catch(err => {
+            alert("Something went wrong, sorry :/");
+            console.log(err);
+          });
+      };
 }
 
 export const setPlaces = places => {
@@ -72,18 +92,24 @@ export const setPlaces = places => {
 
 export const deletePlace = (key) => {
     return dispatch => {
-        dispatch(removePlace(key));
-        fetch("https://rnapp-maps-1556299000508.firebaseio.com/places/" + key + ".json", {
-            method: "DELETE"
+        dispatch(authGetToken())
+        .catch(() => {
+            alert("No valid token found.");
         })
-        .catch(err => {
-            alert("Something went wrong, sorry :/");
-            console.log(err);
+        .then(token => {
+            dispatch(removePlace(key));
+            return fetch("https://rnapp-maps-1556299000508.firebaseio.com/places/" + key + ".json?auth=" + token, {
+                method: "DELETE"
+            })
         })
         .then(res => res.json())
         .then(parsedRes => {
             console.log("Done!");
         })
+        .catch(err => {
+            alert("Something went wrong, sorry :/");
+            console.log(err);
+        });
     }
 }
 
